@@ -6,7 +6,7 @@ import type { Project } from '../../../../types/app';
 type Skill = {
   name: string;
   description: string;
-  trigger?: string;
+  command: string;
 };
 
 type FileTreeNode = {
@@ -170,7 +170,7 @@ export default function ShellInputBar({ selectedProject, sendInput, isConnected 
     const trimmed = text.trim();
     if (!trimmed) return;
     lastSentTextRef.current = text;
-    sendInput(trimmed + '\r\n');
+    sendInput(trimmed + '\r');
     setText('');
     setIsStreaming(true);
     if (textareaRef.current) textareaRef.current.style.height = 'auto';
@@ -198,8 +198,7 @@ export default function ShellInputBar({ selectedProject, sendInput, isConnected 
 
   const handleSlashSelect = (skill: Skill) => {
     setSlashMenuOpen(false);
-    const trigger = skill.trigger || '/' + skill.name.toLowerCase().replace(/\s+/g, '-');
-    insertAtCursor(trigger);
+    insertAtCursor(skill.command);
   };
 
   const handleFileSelect = (file: FileTreeNode) => {
@@ -240,7 +239,7 @@ export default function ShellInputBar({ selectedProject, sendInput, isConnected 
                              hover:bg-gray-700 transition-colors border-b border-border/50 last:border-b-0"
                 >
                   <span className="font-mono font-semibold text-blue-400 text-xs">
-                    {skill.trigger || '/' + skill.name.toLowerCase().replace(/\s+/g, '-')}
+                    {skill.command}
                   </span>
                   <span className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{skill.description}</span>
                 </button>

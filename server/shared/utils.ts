@@ -592,8 +592,8 @@ export async function readProviderSkillMarkdownDefinition(
   const fallbackName = path.basename(path.dirname(skillPath));
 
   return {
-    name: readOptionalString(data.name) ?? fallbackName,
-    description: readOptionalString(data.description) ?? '',
+    name: fallbackName,
+    description: readOptionalString(data.description) ?? data.name ?? '',
   };
 }
 

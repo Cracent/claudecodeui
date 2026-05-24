@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 
 import { useTasksSettings } from '../../../contexts/TasksSettingsContext';
 import PermissionContext from '../../../contexts/PermissionContext';
-import { QuickSettingsPanel } from '../../quick-settings-panel';
 import type { ChatInterfaceProps, Provider  } from '../types/types';
 import type { LLMProvider } from '../../../types/app';
 import { useChatProviderState } from '../hooks/useChatProviderState';
@@ -413,7 +412,6 @@ function ChatInterface({
         />
       </div>
 
-      <QuickSettingsPanel />
     </PermissionContext.Provider>
   );
 }

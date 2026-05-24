@@ -17,6 +17,7 @@ import ShellConnectionOverlay from './subcomponents/ShellConnectionOverlay';
 import ShellEmptyState from './subcomponents/ShellEmptyState';
 import ShellHeader from './subcomponents/ShellHeader';
 import ShellMinimalView from './subcomponents/ShellMinimalView';
+import ShellInputBar from './subcomponents/ShellInputBar';
 import TerminalShortcutsPanel from './subcomponents/TerminalShortcutsPanel';
 
 type CliPromptOption = { number: string; label: string };
@@ -44,6 +45,14 @@ export default function Shell({
 }: ShellProps) {
   const { t } = useTranslation('chat');
   const [isRestarting, setIsRestarting] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
   const [cliPromptOptions, setCliPromptOptions] = useState<CliPromptOption[] | null>(null);
   const promptCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onOutputRef = useRef<(() => void) | null>(null);
@@ -320,11 +329,19 @@ export default function Shell({
         )}
       </div>
 
-      <TerminalShortcutsPanel
-        wsRef={wsRef}
-        terminalRef={terminalRef}
+      <ShellInputBar
+        selectedProject={selectedProject}
+        sendInput={sendInput}
         isConnected={isConnected}
       />
+
+      {!isMobile && (
+        <TerminalShortcutsPanel
+          wsRef={wsRef}
+          terminalRef={terminalRef}
+          isConnected={isConnected}
+        />
+      )}
 
     </div>
   );

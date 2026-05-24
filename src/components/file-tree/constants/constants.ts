@@ -16,3 +16,5 @@ export const IMAGE_FILE_EXTENSIONS = new Set([
   'ico',
   'bmp',
 ]);
+
+export const HTML_FILE_EXTENSIONS = new Set(['html', 'htm']);

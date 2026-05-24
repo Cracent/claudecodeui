@@ -10,7 +10,8 @@ import { useFileTreeSearch } from '../hooks/useFileTreeSearch';
 import { useFileTreeViewMode } from '../hooks/useFileTreeViewMode';
 import { useFileTreeUpload } from '../hooks/useFileTreeUpload';
 import type { FileTreeImageSelection, FileTreeNode } from '../types/types';
-import { formatFileSize, formatRelativeTime, isImageFile } from '../utils/fileTreeUtils';
+import { formatFileSize, formatRelativeTime, isHtmlFile, isImageFile } from '../utils/fileTreeUtils';
+import { authenticatedFetch } from '../../../utils/api';
 import { Project } from '../../../types/app';
 import { ScrollArea, Input } from '../../../shared/view/ui';
 import FileTreeBody from './FileTreeBody';
@@ -105,6 +106,11 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
           // /api/projects/:projectId/files/content endpoint directly.
           projectId: selectedProject.projectId,
         });
+        return;
+      }
+
+      if (isHtmlFile(item.name) && selectedProject) {
+        openHtmlInNewWindow(item.path, selectedProject.projectId);
         return;
       }
 
@@ -289,4 +295,15 @@ export default function FileTree({ selectedProject, onFileOpen }: FileTreeProps)
       )}
     </div>
   );
+}
+
+async function openHtmlInNewWindow(filePath: string, projectId: string) {
+  const url = `/api/projects/${projectId}/files/content?path=${encodeURIComponent(filePath)}`;
+  const response = await authenticatedFetch(url);
+  if (!response.ok) return;
+  const html = await response.text();
+  const blob = new Blob([html], { type: 'text/html' });
+  const blobUrl = URL.createObjectURL(blob);
+  const win = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+  win?.addEventListener('load', () => URL.revokeObjectURL(blobUrl), { once: true });
 }

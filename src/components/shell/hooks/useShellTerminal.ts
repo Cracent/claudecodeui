@@ -10,6 +10,10 @@ import {
   TERMINAL_INIT_DELAY_MS,
   TERMINAL_OPTIONS,
   TERMINAL_RESIZE_DELAY_MS,
+  TOUCH_SCROLL_FRICTION,
+  TOUCH_SCROLL_LINE_HEIGHT_PX,
+  TOUCH_SCROLL_MIN_VELOCITY,
+  TOUCH_SCROLL_SWIPE_THRESHOLD,
 } from '../constants/constants';
 import { copyTextToClipboard } from '../../../utils/clipboard';
 import { isCodexLoginCommand } from '../utils/auth';
@@ -103,6 +107,88 @@ export function useShellTerminal({
     }
 
     nextTerminal.open(terminalContainerRef.current);
+
+    // Touch inertial scroll (adapted from BLCLI_release_v1 OutputArea.tsx)
+    let touchStartY = 0;
+    let lastTouchY = 0;
+    let lastTouchTime = 0;
+    let velocityY = 0;
+    let isSwiping = false;
+    let momentumRaf: number | null = null;
+
+    const stopMomentum = () => {
+      if (momentumRaf !== null) {
+        cancelAnimationFrame(momentumRaf);
+        momentumRaf = null;
+      }
+    };
+
+    const animateMomentum = () => {
+      if (Math.abs(velocityY) < TOUCH_SCROLL_MIN_VELOCITY) {
+        momentumRaf = null;
+        return;
+      }
+      const lines = Math.round(velocityY / TOUCH_SCROLL_LINE_HEIGHT_PX);
+      if (lines !== 0) {
+        nextTerminal.scrollLines(lines);
+      }
+      velocityY *= TOUCH_SCROLL_FRICTION;
+      momentumRaf = requestAnimationFrame(animateMomentum);
+    };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (nextTerminal.hasSelection()) return;
+      stopMomentum();
+      if (e.touches.length === 1) {
+        touchStartY = e.touches[0].clientY;
+        lastTouchY = touchStartY;
+        lastTouchTime = Date.now();
+        velocityY = 0;
+        isSwiping = false;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (nextTerminal.hasSelection()) return;
+      if (e.touches.length !== 1) return;
+
+      const now = Date.now();
+      const currentY = e.touches[0].clientY;
+      const totalDelta = touchStartY - currentY;
+
+      if (Math.abs(totalDelta) > TOUCH_SCROLL_SWIPE_THRESHOLD) {
+        isSwiping = true;
+      }
+
+      if (isSwiping) {
+        const deltaY = lastTouchY - currentY;
+        const lines = Math.round(deltaY / TOUCH_SCROLL_LINE_HEIGHT_PX);
+        if (lines !== 0) {
+          nextTerminal.scrollLines(lines);
+        }
+        const dt = now - lastTouchTime;
+        if (dt > 0) {
+          velocityY = (lastTouchY - currentY) / dt * 16;
+        }
+        lastTouchY = currentY;
+        lastTouchTime = now;
+        e.preventDefault();
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (nextTerminal.hasSelection()) return;
+      isSwiping = false;
+      if (Math.abs(velocityY) > TOUCH_SCROLL_MIN_VELOCITY) {
+        stopMomentum();
+        momentumRaf = requestAnimationFrame(animateMomentum);
+      }
+    };
+
+    const termElement = nextTerminal.element!;
+    termElement.addEventListener('touchstart', onTouchStart, { passive: false });
+    termElement.addEventListener('touchmove', onTouchMove, { passive: false });
+    termElement.addEventListener('touchend', onTouchEnd);
 
     const copyTerminalSelection = async () => {
       const selection = nextTerminal.getSelection();
@@ -249,6 +335,10 @@ export function useShellTerminal({
         window.clearTimeout(resizeTimeoutRef.current);
         resizeTimeoutRef.current = null;
       }
+      termElement.removeEventListener('touchstart', onTouchStart);
+      termElement.removeEventListener('touchmove', onTouchMove);
+      termElement.removeEventListener('touchend', onTouchEnd);
+      stopMomentum();
       dataSubscription.dispose();
       closeSocket();
       disposeTerminal();

@@ -12,6 +12,12 @@ export const PROMPT_OPTION_SCAN_LINES = 15;
 export const PROMPT_MAX_OPTIONS = 5;
 export const PROMPT_MIN_OPTIONS = 2;
 
+// Touch inertial scroll constants (adapted from BLCLI_release_v1)
+export const TOUCH_SCROLL_LINE_HEIGHT_PX = 19; // fontSize:14 → ~19px per line
+export const TOUCH_SCROLL_FRICTION = 0.95;
+export const TOUCH_SCROLL_MIN_VELOCITY = 0.5;
+export const TOUCH_SCROLL_SWIPE_THRESHOLD = 8;
+
 export const TERMINAL_OPTIONS: ITerminalOptions = {
   cursorBlink: true,
   fontSize: 14,

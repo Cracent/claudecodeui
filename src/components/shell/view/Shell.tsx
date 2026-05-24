@@ -18,6 +18,7 @@ import ShellEmptyState from './subcomponents/ShellEmptyState';
 import ShellHeader from './subcomponents/ShellHeader';
 import ShellMinimalView from './subcomponents/ShellMinimalView';
 import ShellInputBar from './subcomponents/ShellInputBar';
+import TerminalScrollbar from './subcomponents/TerminalScrollbar';
 import TerminalShortcutsPanel from './subcomponents/TerminalShortcutsPanel';
 
 type CliPromptOption = { number: string; label: string };
@@ -276,11 +277,14 @@ export default function Shell({
       />
 
       <div className="relative flex-1 overflow-hidden p-2">
-        <div
-          ref={terminalContainerRef}
-          className="h-full w-full focus:outline-none"
-          style={{ outline: 'none' }}
-        />
+        <div className="flex h-full gap-0.5">
+          <div
+            ref={terminalContainerRef}
+            className="h-full flex-1 min-w-0 focus:outline-none"
+            style={{ outline: 'none' }}
+          />
+          <TerminalScrollbar terminalRef={terminalRef} isReady={isInitialized} />
+        </div>
 
         {overlayMode && (
           <ShellConnectionOverlay

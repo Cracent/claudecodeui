@@ -137,6 +137,7 @@
     height: 100%;
     margin: 0;
     padding: 0;
+    overflow: hidden;
   }
   
   /* Root element with safe area padding for PWA */
@@ -617,7 +618,17 @@
       user-select: text !important;
       -webkit-touch-callout: default !important;
     }
-    
+
+    /* Hide native xterm viewport scrollbar — custom TerminalScrollbar replaces it */
+    .xterm .xterm-viewport {
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      overscroll-behavior: none;
+    }
+    .xterm .xterm-viewport::-webkit-scrollbar {
+      display: none;
+    }
+
     /* Fix mobile scrolling */
     .overflow-y-auto {
       touch-action: pan-y;

@@ -88,7 +88,7 @@ function MainContent({
 
   useEffect(() => {
     if (!shouldShowTasksTab && activeTab === 'tasks') {
-      setActiveTab('chat');
+      setActiveTab('shell');
     }
   }, [shouldShowTasksTab, activeTab, setActiveTab]);
 

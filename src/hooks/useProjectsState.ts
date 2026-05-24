@@ -226,13 +226,13 @@ const isValidTab = (tab: string): tab is AppTab => {
 const readPersistedTab = (): AppTab => {
   try {
     const stored = localStorage.getItem('activeTab');
-    if (stored && isValidTab(stored)) {
+    if (stored && isValidTab(stored) && stored !== 'chat') {
       return stored as AppTab;
     }
   } catch {
     // localStorage unavailable
   }
-  return 'chat';
+  return 'shell';
 };
 
 export function useProjectsState({
@@ -611,7 +611,7 @@ export function useProjectsState({
       setSelectedSession(session);
 
       if (activeTab === 'tasks' || activeTab === 'preview') {
-        setActiveTab('chat');
+        setActiveTab('shell');
       }
 
       const provider = localStorage.getItem('selected-provider') || 'claude';
@@ -641,7 +641,7 @@ export function useProjectsState({
     (project: Project) => {
       setSelectedProject(project);
       setSelectedSession(null);
-      setActiveTab('chat');
+      setActiveTab('shell');
       setNewSessionTrigger((previous) => previous + 1);
       navigate('/');
 
